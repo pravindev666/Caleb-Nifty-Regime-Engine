@@ -32,17 +32,8 @@ This is a fundamentally different and solvable problem. Volatility clusters. Cal
 
 ---
 
-## System architecture
-
-```mermaid
-graph TD
-    A[data_updater.py] -->|fetches daily| B[(nifty_daily.csv)]
-    A -->|fetches daily| C[(vix_daily.csv)]
-    A -->|fetches daily| D[(bank_nifty_daily.csv)]
-    A -->|fetches daily| E[(sp500_daily.csv)]
-    A -->|derived from VIX| F[(vix_term_daily.csv)]
-    A -->|NSE scrape| G[(fii_dii_daily.csv)]
-    A -->|NSE scrape| H[(pcr_daily.csv)]
+    A -->|Invest.com| K[(Economic Events)]
+    A -->|NSE/RBI/Fed| L[(Live Market Events)]
 
     B --> I[nifty_regime.py]
     C --> I
@@ -52,23 +43,25 @@ graph TD
     G --> I
     H --> I
 
-    I -->|build_regime_table| J[Feature matrix<br/>2,700+ rows × 26 features<br/>ALL lagged 1 day — no lookahead]
-    J -->|compute_score| K[Regime Score 0–100]
-    K -->|classify| L{GREEN / YELLOW / RED}
+    I -->|build_regime_table| J[Feature matrix<br/>2,700+ rows × 26 features]
+    J -->|compute_score| M[Regime Score 0–100]
+    M -->|classify| N{GREEN / YELLOW / RED}
 
-    L -->|score ≥ 65| M[Iron Condor strikes]
-    L -->|RSI < 38 + Z < -1.2| N[Bull Call Spread]
-    L -->|downtrend + RSI 32–60| O[Bear Call Spread]
-    L -->|RED — no conditions met| P[DO NOTHING]
+    N -->|score ≥ 65| O[Iron Condor strikes]
+    N -->|RSI < 38| P[Bull Call Spread]
+    N -->|downtrend| Q[Bear Call Spread]
 
-    J --> Q[whipsaw_analyser.py]
-    Q -->|historical similar days| R[Bounce path projection]
-    R -->|adjusted sell strike| O
+    J --> R[probability_engine.py]
+    R -->|Multi-source verdict| S[UP / DOWN / SIDEWAYS<br/>Confidence score]
 
-    I --> S[dashboard.py]
-    Q --> S
-    S -->|streamlit run| T[Web dashboard<br/>localhost:8504]
-```
+    J --> T[event_fetcher.py]
+    T -->|Live monitoring| U[Event Calendar<br/>RBI, FOMC, Expiry]
+
+    I --> V[dashboard.py]
+    S --> V
+    U --> V
+    V -->|streamlit run| W[Terminal UI<br/>IBM Plex Mono Aesthetic]
+
 
 ---
 
