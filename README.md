@@ -32,38 +32,47 @@ This is a fundamentally different and solvable problem. Volatility clusters. Cal
 
 ---
 
-    A -->|Invest.com| K[(Economic Events)]
-    A -->|NSE/RBI/Fed| L[(Live Market Events)]
+## System architecture
 
-    B --> I[nifty_regime.py]
-    C --> I
-    D --> I
-    E --> I
-    F --> I
-    G --> I
-    H --> I
+```mermaid
+graph TD
+    A[data_updater.py] -->|fetches daily| B[(nifty_daily.csv)]
+    A -->|fetches daily| C[(vix_daily.csv)]
+    A -->|fetches daily| D[(bank_nifty_daily.csv)]
+    A -->|fetches daily| E[(sp500_daily.csv)]
+    A -->|derived from VIX| F[(vix_term_daily.csv)]
+    A -->|NSE/RBI/Fed| G[(Live Market Events)]
+    A -->|NSE scrape| H[(fii_dii_daily.csv)]
+    A -->|NSE scrape| I[(pcr_daily.csv)]
 
-    I -->|build_regime_table| J[Feature matrix<br/>2,700+ rows × 26 features]
-    J -->|compute_score| M[Regime Score 0–100]
-    M -->|classify| N{GREEN / YELLOW / RED}
+    B --> J[nifty_regime.py]
+    C --> J
+    D --> J
+    E --> J
+    F --> J
+    H --> J
+    I --> J
 
-    N -->|score ≥ 65| O[Iron Condor strikes]
-    N -->|RSI < 38| P[Bull Call Spread]
-    N -->|downtrend| Q[Bear Call Spread]
+    J -->|build_regime_table| K[Feature matrix<br/>2,700+ rows × 26 features]
+    K -->|compute_score| L[Regime Score 0–100]
+    L -->|classify| M{GREEN / YELLOW / RED}
 
-    J --> R[probability_engine.py]
-    R -->|Multi-source verdict| S[UP / DOWN / SIDEWAYS<br/>Confidence score]
+    M -->|score ≥ 65| N[Iron Condor strikes]
+    M -->|RSI < 38| O[Bull Call Spread]
+    M -->|downtrend| P[Bear Call Spread]
 
-    J --> T[event_fetcher.py]
-    T -->|Live monitoring| U[Event Calendar<br/>RBI, FOMC, Expiry]
+    K --> Q[probability_engine.py]
+    Q -->|Multi-source verdict| R[UP / DOWN / SIDEWAYS<br/>Confidence score]
 
-    I --> V[dashboard.py]
-    S --> V
-    U --> V
-    V -->|streamlit run| W[Terminal UI<br/>IBM Plex Mono Aesthetic]
+    K --> S[event_fetcher.py]
+    S -->|Live monitoring| T[Event Calendar<br/>RBI, FOMC, Expiry]
 
+    J --> U[dashboard.py]
+    R --> U
+    T --> U
+    U -->|streamlit run| V[Terminal UI<br/>IBM Plex Mono Aesthetic]
+```
 
----
 
 ## Data sources
 
