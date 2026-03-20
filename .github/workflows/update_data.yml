@@ -1,0 +1,41 @@
+name: Daily data update
+
+on:
+  schedule:
+    # Runs at 08:00 UTC = 1:30 PM IST (after NSE opens)
+    # and at 12:00 UTC = 5:30 PM IST (after NSE closes)
+    - cron: '0 8 * * 1-5'
+    - cron: '0 12 * * 1-5'
+  workflow_dispatch:   # allow manual trigger from GitHub UI
+
+jobs:
+  update-data:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          pip install pandas numpy yfinance requests scipy
+
+      - name: Run data updater
+        run: |
+          python data_updater.py
+
+      - name: Commit updated CSVs
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/*.csv
+          # Only commit if something changed
+          git diff --staged --quiet || git commit -m "Auto: daily data update $(date -u '+%Y-%m-%d %H:%M UTC')"
+          git push
