@@ -31,7 +31,7 @@ st.markdown("""<style>
 </style>""", unsafe_allow_html=True)
 
 try:
-    from nifty_regime import build_regime_table, compute_score, classify, generate_signals, run_backtest
+    from nifty_regime import build_regime_table, compute_score, classify, generate_signals, run_backtest, CONDOR_ATR_MULT
     from event_fetcher import load_events
     from probability_engine import compute_verdict
 except ImportError as e: st.error(f"Import error: {e}"); st.stop()
@@ -47,7 +47,6 @@ close, vix, atr10 = float(row.get('close', 0)), float(row.get('vix', 0)), float(
 rsi, z = float(row.get('rsi', 50)), float(row.get('z_score', 0))
 events = load_events(30); nxt = events[0] if events else None; ndelta = (nxt['date']-date.today()).days if nxt else None
 
-# Metric row for visibility
 st.markdown(f"""<div class="metric-row">
     <div class="metric-card"><div class="metric-label">SPOT</div><div class="metric-value">{close:,.2f}</div></div>
     <div class="metric-card"><div class="metric-label">VIX</div><div class="metric-value">{vix:.2f}</div></div>
@@ -94,28 +93,54 @@ with r_col:
             fig = go.Figure()
             for p in res['mc']['paths_sample']: fig.add_trace(go.Scatter(y=p, mode='lines', line=dict(width=0.4), opacity=0.3, hoverinfo='skip'))
             fig.update_layout(plot_bgcolor='#060810', paper_bgcolor='#060810', height=250, margin=dict(l=5,r=5,t=5,b=5), showlegend=False, xaxis=dict(visible=False), yaxis=dict(gridcolor='#0f1520', tickfont=dict(size=7)))
-            st.plotly_chart(fig, use_container_width=True)
+            st.plotly_chart(fig, width='stretch')
     with ta3:
-        st.write("MARKET REGIME VISUALIZATION")
-        hist = df.tail(180).copy()
-        fig = go.Figure()
-        fig.add_trace(go.Scatter(x=hist['date'], y=hist['close'], mode='lines', line=dict(color='#fff', width=1)))
+        hist = df.tail(150).copy(); hist['score'] = hist.apply(lambda r: compute_score(r)[0], axis=1)
+        st.markdown('<div class="sec">REGIME PRICE TRACKER</div>', unsafe_allow_html=True)
+        fig1 = go.Figure()
+        fig1.add_trace(go.Scatter(x=hist['date'], y=hist['close'], name="Nifty Close", line=dict(color='#fff', width=1.5)))
         for i in range(len(hist)-1):
-            sc, _ = compute_score(hist.iloc[i]); reg = classify(sc)
-            color = "rgba(34,197,94,0.1)" if reg=="GREEN" else "rgba(239,68,68,0.1)" if reg=="RED" else "rgba(245,158,11,0.1)"
-            fig.add_vrect(x0=hist.iloc[i]['date'], x1=hist.iloc[i+1]['date'], fillcolor=color, layer="below", line_width=0)
-        fig.update_layout(plot_bgcolor='#060810', paper_bgcolor='#060810', height=400, margin=dict(l=10,r=10,t=10,b=10), xaxis=dict(gridcolor='#0f1520'), yaxis=dict(gridcolor='#0f1520'))
-        st.plotly_chart(fig, use_container_width=True)
+            r = classify(hist.iloc[i]['score'])
+            color = "rgba(34,197,94,0.15)" if r=="GREEN" else "rgba(239,68,68,0.15)" if r=="RED" else "rgba(245,158,11,0.1)"
+            fig1.add_vrect(x0=hist.iloc[i]['date'], x1=hist.iloc[i+1]['date'], fillcolor=color, layer="below", line_width=0)
+        fig1.update_layout(plot_bgcolor='#060810', paper_bgcolor='#060810', height=300, margin=dict(l=5,r=5,t=5,b=5), yaxis=dict(gridcolor='#0f1520'), xaxis=dict(visible=False))
+        st.plotly_chart(fig1, width='stretch')
+
+        st.markdown('<div class="sec">REGIME SCORE HISTORY</div>', unsafe_allow_html=True)
+        fig2 = go.Figure()
+        fig2.add_trace(go.Scatter(x=hist['date'], y=hist['score'], line=dict(color='#f5a623', width=1.5), fill='tozeroy', fillcolor='rgba(245,166,35,0.05)'))
+        fig2.add_hline(y=65, line_dash="dash", line_color="#22c55e", opacity=0.5)
+        fig2.update_layout(plot_bgcolor='#060810', paper_bgcolor='#060810', height=200, margin=dict(l=5,r=5,t=5,b=5), yaxis=dict(gridcolor='#0f1520'), xaxis=dict(visible=False))
+        st.plotly_chart(fig2, width='stretch')
+
+        c1, c2 = st.columns(2)
+        with c1:
+            st.markdown('<div class="sec">ATR & CONDOR GAP</div>', unsafe_allow_html=True)
+            fig3 = go.Figure()
+            fig3.add_trace(go.Scatter(x=hist['date'], y=hist['atr10'], line=dict(color='#3b82f6')))
+            fig3.add_hline(y=150, line_dash="dot", line_color="#ef4444")
+            fig3.update_layout(plot_bgcolor='#060810', paper_bgcolor='#060810', height=180, margin=dict(l=5,r=5,t=5,b=5), yaxis=dict(gridcolor='#0f1520'))
+            st.plotly_chart(fig3, width='stretch')
+        with c2:
+            st.markdown('<div class="sec">INDIA VIX LEVELS</div>', unsafe_allow_html=True)
+            fig4 = go.Figure()
+            fig4.add_trace(go.Scatter(x=hist['date'], y=hist['vix'], line=dict(color='#a855f7')))
+            fig4.add_hline(y=14, line_color="#22c55e", opacity=0.5); fig4.add_hline(y=20, line_color="#ef4444", opacity=0.5)
+            fig4.update_layout(plot_bgcolor='#060810', paper_bgcolor='#060810', height=180, margin=dict(l=5,r=5,t=5,b=5), yaxis=dict(gridcolor='#0f1520'))
+            st.plotly_chart(fig4, width='stretch')
+
     with ta4:
         st.write("BACKTEST PERFORMANCE (Since 2015)")
         res_bt, yearly = run_backtest(df_all)
-        c1, c2, c3 = st.columns(3)
-        c1.metric("GREEN SAFE", f"{np.mean(res_bt['GREEN']):.1%}")
-        c2.metric("ALL DAYS SAFE", f"{np.mean(res_bt['GREEN']+res_bt['YELLOW']+res_bt['RED']):.1%}")
-        c3.metric("FILTER LIFT", f"{np.mean(res_bt['GREEN']) - np.mean(res_bt['GREEN']+res_bt['YELLOW']+res_bt['RED']):+.1%}")
-        st.write("YEARLY BREAKOUT")
-        y_df = pd.DataFrame([{'Year': y, 'Safe %': f"{v*100:.1f}%"} for y,v in yearly.items()])
-        st.table(y_df)
+        if res_bt and yearly:
+            c1, c2, c3 = st.columns(3)
+            tg = res_bt.get('GREEN', [0]); ta = res_bt.get('GREEN',[]) + res_bt.get('YELLOW',[]) + res_bt.get('RED',[])
+            c1.metric("GREEN SAFE", f"{np.mean(tg):.1%}")
+            c2.metric("ALL DAYS SAFE", f"{np.mean(ta):.1%}")
+            c3.metric("FILTER LIFT", f"{np.mean(tg) - np.mean(ta):+.1%}")
+            st.write("YEARLY PERFORMANCE (GREEN DAYS ONLY)")
+            y_df = pd.DataFrame([{'Year': y, 'Success Rate': f"{v*100:.1f}%"} for y,v in sorted(yearly.items(), reverse=True)])
+            st.table(y_df)
     with ta5:
         st.markdown("""### Trading Rules
 1. **Capital First**: If Regime is RED, do nothing. No exceptions.

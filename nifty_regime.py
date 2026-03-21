@@ -428,6 +428,7 @@ def run_backtest(df):
         else:
             print(f"WEAK — tighten thresholds or widen strikes.")
     print()
+    return results, {yr: (v['G_s']/v['GREEN'] if v['GREEN'] else 0) for yr, v in yearly.items()}
 
 
 # ── TODAY'S OUTPUT ────────────────────────────────────────────────────────────
