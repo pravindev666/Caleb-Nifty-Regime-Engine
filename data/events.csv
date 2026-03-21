@@ -1,44 +1,44 @@
 date,label,type,impact,tip
 2026-03-21,NSE: Id-Ul-Fitr (Ramadan Eid),danger,HIGH,
-2026-03-26,Monthly Expiry,danger,HIGH,Avoid selling expiry week.
+2026-03-24,Weekly Expiry,warn,MEDIUM,Options expire today.
 2026-03-26,NSE: Shri Ram Navami,danger,HIGH,
+2026-03-31,Monthly Expiry,danger,HIGH,Avoid selling expiry week.
 2026-03-31,NSE: Shri Mahavir Jayanti,danger,HIGH,
-2026-04-02,Weekly Expiry,warn,MEDIUM,Options expire today.
 2026-04-03,NSE: Good Friday,danger,HIGH,
-2026-04-09,Weekly Expiry,warn,MEDIUM,Options expire today.
+2026-04-07,Weekly Expiry,warn,MEDIUM,Options expire today.
 2026-04-09,RBI MPC,danger,HIGH,RBI MPC decision day.
 2026-04-14,NSE: Dr. Baba Saheb Ambedkar Jayanti,danger,HIGH,
-2026-04-16,Weekly Expiry,warn,MEDIUM,Options expire today.
-2026-04-23,Weekly Expiry,warn,MEDIUM,Options expire today.
+2026-04-14,Weekly Expiry,warn,MEDIUM,Options expire today.
+2026-04-21,Weekly Expiry,warn,MEDIUM,Options expire today.
+2026-04-28,Monthly Expiry,danger,HIGH,Avoid selling expiry week.
 2026-04-29,FOMC,warn,HIGH,FOMC decision day.
-2026-04-30,Monthly Expiry,danger,HIGH,Avoid selling expiry week.
 2026-05-01,NSE: Maharashtra Day,danger,HIGH,
-2026-05-07,Weekly Expiry,warn,MEDIUM,Options expire today.
-2026-05-14,Weekly Expiry,warn,MEDIUM,Options expire today.
-2026-05-21,Weekly Expiry,warn,MEDIUM,Options expire today.
+2026-05-05,Weekly Expiry,warn,MEDIUM,Options expire today.
+2026-05-12,Weekly Expiry,warn,MEDIUM,Options expire today.
+2026-05-19,Weekly Expiry,warn,MEDIUM,Options expire today.
+2026-05-26,Monthly Expiry,danger,HIGH,Avoid selling expiry week.
 2026-05-28,NSE: Bakri Id,danger,HIGH,
-2026-05-28,Monthly Expiry,danger,HIGH,Avoid selling expiry week.
-2026-06-04,Weekly Expiry,warn,MEDIUM,Options expire today.
+2026-06-02,Weekly Expiry,warn,MEDIUM,Options expire today.
 2026-06-05,RBI MPC,danger,HIGH,RBI MPC decision day.
-2026-06-11,Weekly Expiry,warn,MEDIUM,Options expire today.
+2026-06-09,Weekly Expiry,warn,MEDIUM,Options expire today.
+2026-06-16,Weekly Expiry,warn,MEDIUM,Options expire today.
 2026-06-17,FOMC,warn,HIGH,FOMC decision day.
-2026-06-18,Weekly Expiry,warn,MEDIUM,Options expire today.
-2026-06-25,Monthly Expiry,danger,HIGH,Avoid selling expiry week.
+2026-06-23,Weekly Expiry,warn,MEDIUM,Options expire today.
 2026-06-26,NSE: Muharram,danger,HIGH,
-2026-07-02,Weekly Expiry,warn,MEDIUM,Options expire today.
-2026-07-09,Weekly Expiry,warn,MEDIUM,Options expire today.
-2026-07-16,Weekly Expiry,warn,MEDIUM,Options expire today.
-2026-07-23,Weekly Expiry,warn,MEDIUM,Options expire today.
-2026-07-30,Monthly Expiry,danger,HIGH,Avoid selling expiry week.
-2026-08-06,Weekly Expiry,warn,MEDIUM,Options expire today.
-2026-08-13,Weekly Expiry,warn,MEDIUM,Options expire today.
+2026-06-30,Monthly Expiry,danger,HIGH,Avoid selling expiry week.
+2026-07-07,Weekly Expiry,warn,MEDIUM,Options expire today.
+2026-07-14,Weekly Expiry,warn,MEDIUM,Options expire today.
+2026-07-21,Weekly Expiry,warn,MEDIUM,Options expire today.
+2026-07-28,Monthly Expiry,danger,HIGH,Avoid selling expiry week.
+2026-08-04,Weekly Expiry,warn,MEDIUM,Options expire today.
+2026-08-11,Weekly Expiry,warn,MEDIUM,Options expire today.
 2026-08-15,NSE: Independence Day,danger,HIGH,
-2026-08-20,Weekly Expiry,warn,MEDIUM,Options expire today.
-2026-08-27,Monthly Expiry,danger,HIGH,Avoid selling expiry week.
-2026-09-03,Weekly Expiry,warn,MEDIUM,Options expire today.
-2026-09-10,Weekly Expiry,warn,MEDIUM,Options expire today.
+2026-08-18,Weekly Expiry,warn,MEDIUM,Options expire today.
+2026-08-25,Monthly Expiry,danger,HIGH,Avoid selling expiry week.
+2026-09-01,Weekly Expiry,warn,MEDIUM,Options expire today.
+2026-09-08,Weekly Expiry,warn,MEDIUM,Options expire today.
 2026-09-14,NSE: Ganesh Chaturthi,danger,HIGH,
-2026-09-17,Weekly Expiry,warn,MEDIUM,Options expire today.
+2026-09-15,Weekly Expiry,warn,MEDIUM,Options expire today.
 2026-10-02,NSE: Mahatma Gandhi Jayanti,danger,HIGH,
 2026-10-20,NSE: Dussehra,danger,HIGH,
 2026-11-08,NSE: Diwali Laxmi Pujan*,danger,HIGH,

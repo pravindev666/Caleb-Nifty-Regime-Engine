@@ -15,9 +15,9 @@ def get_nifty_expiry_dates(months_ahead=6):
     today, end = _today(), _today() + timedelta(days=months_ahead*30)
     d = today
     while d <= end:
-        if d.weekday() == 3:
-            next_thu = d + timedelta(days=7)
-            is_monthly = next_thu.month != d.month
+        if d.weekday() == 1:  # Tuesday (Nifty Expiry in 2026)
+            next_tue = d + timedelta(days=7)
+            is_monthly = next_tue.month != d.month
             events.append({'date': d, 'label': 'Monthly Expiry' if is_monthly else 'Weekly Expiry',
                            'type': 'danger' if is_monthly else 'warn', 'impact': 'HIGH' if is_monthly else 'MEDIUM',
                            'tip': 'Avoid selling expiry week.' if is_monthly else 'Options expire today.'})
