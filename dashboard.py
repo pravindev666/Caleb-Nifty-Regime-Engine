@@ -73,27 +73,102 @@ with r_col:
         else: st.warning("NO TRADE TODAY — Regime is RED or Market Stress is too high.")
     with ta2:
         res = compute_verdict(7)
-        if res:
-            c1, c2 = st.columns(2)
-            color = "#22c55e" if res["verdict"]=="UP" else "#ef4444" if res["verdict"]=="DOWN" else "#f5a623"
-            c1.markdown(f'<div style="border:1px solid #0f1520;padding:20px;text-align:center"><div style="font-size:.5rem;letter-spacing:.2em">7-DAY VERDICT</div><div style="font-size:2.8rem;font-weight:600;color:{color}">{res["verdict"]}</div><div style="font-size:.6rem;color:#1a2535;letter-spacing:.1em">{res["confidence"]:.0f}% CONFIDENCE</div></div>', unsafe_allow_html=True)
-            with c2:
-                st.write("CONSENSUS PROBABILITIES")
-                st.progress(res['eu'], text=f"UP: {res['eu']:.1%}")
-                st.progress(res['ef'], text=f"FLAT: {res['ef']:.1%}")
-                st.progress(res['ed'], text=f"DOWN: {res['ed']:.1%}")
+        if not res:
+            st.warning("Data incomplete")
+        else:
+            st.markdown('<div class="sec" style="margin-top:0;">PROBABILITY ENGINE — 7-DAY HORIZON — 3 METHODS CROSS-VALIDATED</div>', unsafe_allow_html=True)
             
-            st.markdown('<div class="sec">3-METHOD BREAKDOWN</div>', unsafe_allow_html=True)
-            col_e, col_m, col_b = st.columns(3)
-            col_e.metric("Empirical", f"{res['empirical']['p_up']:.0%}")
-            col_m.metric("Monte Carlo", f"{res['mc']['p_up']:.0%}")
-            col_b.metric("Bayesian", f"{res['bayesian']['p_up']:.0%}")
+            c1, c2, c3 = st.columns([1.2, 2.5, 1], gap="medium")
+            with c1:
+                v = res['verdict']
+                col = '#ef4444' if v == 'DOWN' else '#22c55e' if v == 'UP' else '#f5a623'
+                conf = res['confidence']
+                conf_text = "HIGH" if conf > 60 else "MODERATE" if conf > 30 else "LOW"
+                st.markdown(f'''
+                <div style="border:1px solid {col}33; padding:20px; text-align:center; height:100%; display:flex; flex-direction:column; justify-content:center;">
+                    <div style="font-size:0.55rem; letter-spacing:0.2em; color:#1a2535; margin-bottom:15px;">ENSEMBLE VERDICT</div>
+                    <div style="font-size:4rem; font-weight:700; color:{col}; line-height:1;">{v}</div>
+                    <div style="font-size:0.65rem; color:{col}; margin:15px 0; font-weight:600; letter-spacing:0.1em;">{conf_text} CONFIDENCE</div>
+                    <div style="width:100%; height:4px; background:#0f1520; margin-bottom:10px;">
+                        <div style="width:{conf}%; height:100%; background:{col};"></div>
+                    </div>
+                    <div style="font-size:0.55rem; color:#1a2535;">{conf:.0f}% confidence · {res["methods_agree"]}/3 methods agree</div>
+                </div>
+                ''', unsafe_allow_html=True)
+                
+            with c2:
+                st.markdown('<div style="display:flex; justify-content:space-between; font-size:0.45rem; letter-spacing:0.15em; color:#1a2535; margin-bottom:5px; padding-bottom:5px; border-bottom:1px solid #0f1520;"><span>METHODVERDICT</span><span>UP / FLAT / DOWN</span><span>AGREE</span></div>', unsafe_allow_html=True)
+                def pbar(label, data):
+                    pu, pf, pd_ = data['p_up']*100, data['p_flat']*100, data['p_down']*100
+                    vd = data['verdict']
+                    vcol = '#ef4444' if vd == 'DOWN' else '#22c55e' if vd == 'UP' else '#f5a623'
+                    return f'''
+                    <div style="border:1px solid #0f1520; padding:12px; margin-bottom:10px; border-radius:3px;">
+                        <div style="font-size:0.6rem; color:#1a2535; letter-spacing:0.05em; display:flex; justify-content:space-between; margin-bottom:6px;">
+                            <span>{label}</span>
+                            <span style="color:{vcol}; font-weight:600;">{vd}</span>
+                        </div>
+                        <div style="display:flex; height:4px; width:100%; margin-bottom:6px; background:#0f1520;">
+                            <div style="width:{pu}%; background:#22c55e;"></div>
+                            <div style="width:{pf}%; background:#f5a623;"></div>
+                            <div style="width:{pd_}%; background:#ef4444;"></div>
+                        </div>
+                        <div style="font-size:0.55rem; display:flex; justify-content:space-between; color:#1a2535;">
+                            <span style="color:#22c55e">↑ {pu:.0f}%</span>
+                            <span style="color:#f5a623">↔ {pf:.0f}%</span>
+                            <span style="color:#ef4444">↓ {pd_:.0f}%</span>
+                        </div>
+                    </div>
+                    '''
+                st.markdown(pbar(f"Empirical — 11yr history (n={res['empirical']['n_samples']})", res['empirical']), unsafe_allow_html=True)
+                st.markdown(pbar(f"Monte Carlo — {res['mc']['n_paths']:,} paths (fat tails)", res['mc']), unsafe_allow_html=True)
+                st.markdown(pbar(f"Bayesian — {res['bayesian']['signals_count']} signals updated", res['bayesian']), unsafe_allow_html=True)
+                
+            with c3:
+                st.markdown('<div style="font-size:0.5rem; letter-spacing:0.15em; color:#1a2535; margin-bottom:10px;">EXPECTED PRICE AT DAY 7</div>', unsafe_allow_html=True)
+                exp = res['expected']
+                st.markdown(f'''
+                <div style="border:1px solid #0f1520; padding:15px; border-radius:3px; font-size:0.65rem;">
+                    <div style="display:flex; justify-content:space-between; margin-bottom:12px; color:#1a2535;"><span>Bull (p95)</span><span style="color:#22c55e">{exp['bull']:,}</span></div>
+                    <div style="display:flex; justify-content:space-between; margin-bottom:12px; color:#1a2535;"><span>p75</span><span style="color:#22c55e">{exp['p75']:,}</span></div>
+                    <div style="display:flex; justify-content:space-between; margin-bottom:12px; color:#1a2535;"><span>Median</span><span style="color:#f5a623">{exp['median']:,}</span></div>
+                    <div style="display:flex; justify-content:space-between; margin-bottom:12px; color:#1a2535;"><span>p25</span><span style="color:#ef4444">{exp['p25']:,}</span></div>
+                    <div style="display:flex; justify-content:space-between; color:#1a2535;"><span>Bear (p5)</span><span style="color:#ef4444">{exp['bear']:,}</span></div>
+                </div>
+                ''', unsafe_allow_html=True)
 
-            st.markdown('<div class="sec">MONTE CARLO PATHS</div>', unsafe_allow_html=True)
-            fig = go.Figure()
-            for p in res['mc']['paths_sample']: fig.add_trace(go.Scatter(y=p, mode='lines', line=dict(width=0.4), opacity=0.3, hoverinfo='skip'))
-            fig.update_layout(plot_bgcolor='#060810', paper_bgcolor='#060810', height=250, margin=dict(l=5,r=5,t=5,b=5), showlegend=False, xaxis=dict(visible=False), yaxis=dict(gridcolor='#0f1520', tickfont=dict(size=7)))
-            st.plotly_chart(fig, width='stretch')
+            st.write("")
+            c_u, c_d = st.columns(2, gap="medium")
+            with c_u:
+                st.markdown('<div style="border:1px solid #0f1520; padding:15px; border-radius:3px;">', unsafe_allow_html=True)
+                st.markdown('<div style="font-size:0.55rem; color:#22c55e; letter-spacing:0.1em; margin-bottom:15px; font-weight:600;">UPSIDE — P(Nifty touches this within 7d)</div>', unsafe_allow_html=True)
+                for item in res['empirical']['upside']:
+                    pct = item['prob'] * 100
+                    st.markdown(f'''<div style="display:flex; align-items:center; margin-bottom:10px; font-size:0.6rem; color:#1a2535;"><div style="width:100px;">{item['label']}</div><div style="flex-grow:1; height:6px; background:#0f1520; margin:0 15px;"><div style="width:{pct}%; height:100%; background:#22c55e;"></div></div><div style="width:30px; text-align:right; color:#22c55e; font-weight:600;">{pct:.0f}%</div></div>''', unsafe_allow_html=True)
+                st.markdown('</div>', unsafe_allow_html=True)
+            with c_d:
+                st.markdown('<div style="border:1px solid #0f1520; padding:15px; border-radius:3px;">', unsafe_allow_html=True)
+                st.markdown('<div style="font-size:0.55rem; color:#ef4444; letter-spacing:0.1em; margin-bottom:15px; font-weight:600;">DOWNSIDE — P(Nifty touches this within 7d)</div>', unsafe_allow_html=True)
+                for item in res['empirical']['downside']:
+                    pct = item['prob'] * 100
+                    st.markdown(f'''<div style="display:flex; align-items:center; margin-bottom:10px; font-size:0.6rem; color:#1a2535;"><div style="width:100px;">{item['label']}</div><div style="flex-grow:1; height:6px; background:#0f1520; margin:0 15px;"><div style="width:{pct}%; height:100%; background:#ef4444;"></div></div><div style="width:30px; text-align:right; color:#ef4444; font-weight:600;">{pct:.0f}%</div></div>''', unsafe_allow_html=True)
+                st.markdown('</div>', unsafe_allow_html=True)
+
+            st.write("")
+            st.markdown('<div class="sec">BAYESIAN SIGNAL BREAKDOWN — WHAT PUSHED THE VERDICT</div>', unsafe_allow_html=True)
+            trs = []
+            for sig in res['bayesian']['breakdown']:
+                valcol = '#22c55e' if sig['adj']>0 else '#ef4444' if sig['adj']<0 else '#1a2535'
+                aj = f"{sig['adj']:+.2f}" if sig['adj']!=0 else "0.00"
+                trs.append(f'''<tr style="border-bottom:1px solid #0f1520; font-size:0.65rem; color:#1a2535;"><td style="padding:10px 0;">{sig['signal']}</td><td style="padding:10px 0;">{sig['value']}</td><td style="padding:10px 0; color:{valcol}; text-align:center;">{sig['interp']}</td><td style="padding:10px 0; color:{valcol}; text-align:right; font-family:monospace;">{aj}</td></tr>''')
+            st.markdown(f'''<table style="width:100%; border-collapse:collapse; margin-bottom:20px;"><tr style="border-bottom:1px solid #0f1520; font-size:0.45rem; letter-spacing:0.15em; color:#1a2535; text-align:left;"><th style="padding-bottom:10px;">SIGNAL</th><th style="padding-bottom:10px;">VALUE</th><th style="padding-bottom:10px; text-align:center;">INTERPRETATION</th><th style="padding-bottom:10px; text-align:right;">ADJ</th></tr>{"".join(trs)}</table>''', unsafe_allow_html=True)
+            
+            st.markdown('<div class="sec">DATA SOURCES ACTIVE</div>', unsafe_allow_html=True)
+            chips = []
+            for src in res['active_sources']:
+                if src['active']: chips.append(f'<span style="display:inline-block; border:1px solid #22c55e66; color:#22c55e; padding:4px 12px; border-radius:3px; font-size:0.55rem; margin:0 8px 8px 0; background:rgba(34,197,94,0.05);">✓ {src["name"]}</span>')
+                else: chips.append(f'<span style="display:inline-block; border:1px solid #1a2535; color:#1a2535; padding:4px 12px; border-radius:3px; font-size:0.55rem; margin:0 8px 8px 0;">X {src["name"]}</span>')
+            st.markdown(f'<div>{"".join(chips)}</div>', unsafe_allow_html=True)
     with ta3:
         hist = df.tail(150).copy(); hist['score'] = hist.apply(lambda r: compute_score(r)[0], axis=1)
         st.markdown('<div class="sec">REGIME PRICE TRACKER</div>', unsafe_allow_html=True)
@@ -134,7 +209,8 @@ with r_col:
         res_bt, yearly = run_backtest(df_all)
         if res_bt and yearly:
             c1, c2, c3 = st.columns(3)
-            tg = res_bt.get('GREEN', [0]); ta = res_bt.get('GREEN',[]) + res_bt.get('YELLOW',[]) + res_bt.get('RED',[])
+            tg = res_bt.get('GREEN', []) or [0]
+            ta = (res_bt.get('GREEN',[]) + res_bt.get('YELLOW',[]) + res_bt.get('RED',[])) or [0]
             c1.metric("GREEN SAFE", f"{np.mean(tg):.1%}")
             c2.metric("ALL DAYS SAFE", f"{np.mean(ta):.1%}")
             c3.metric("FILTER LIFT", f"{np.mean(tg) - np.mean(ta):+.1%}")
