@@ -126,7 +126,7 @@ with r_col:
                 
             with c3:
                 st.markdown('<div style="font-size:0.5rem; letter-spacing:0.15em; color:#1a2535; margin-bottom:10px;">EXPECTED PRICE AT DAY 7</div>', unsafe_allow_html=True)
-                exp = res['expected']
+                exp = res['empirical']['expected']
                 st.markdown(f'''
                 <div style="border:1px solid #0f1520; padding:15px; border-radius:3px; font-size:0.65rem;">
                     <div style="display:flex; justify-content:space-between; margin-bottom:12px; color:#1a2535;"><span>Bull (p95)</span><span style="color:#22c55e">{exp['bull']:,}</span></div>
